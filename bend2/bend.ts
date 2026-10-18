@@ -3736,6 +3736,18 @@ export function def_check(book: Book, k: Name, def: Def, z?: number): LTerm {
   return term_check(gen, { t, n: def.n - def.x, def: k, qs, u: def.u, z }, v, Lone(), T, ctx_nil(), 0).tm;
 }
 
+// PROTOTYPE (#1633): a short deterministic content hash of an instance's
+// ~ arguments, so the same instance keeps the same name in every worker,
+// every order and every run. FNV-1a 64-bit, base-36 for compactness.
+function hash_key(s: string): string {
+  let h = 0xcbf29ce484222325n;
+  for (let i = 0; i < s.length; i++) {
+    h ^= BigInt(s.charCodeAt(i));
+    h = (h * 0x100000001b3n) & 0xffffffffffffffffn;
+  }
+  return h.toString(36);
+}
+
 export function def_inst(book: Book, lhs: LHS, tm: Extract<HTerm, { $: "Ref" }>, def: Def, sp: HTerm[], ctx: Ctx, d: number): Name {
   const xs = sp.slice(0, def.x);
   if (xs.length < def.x) {
@@ -3762,7 +3774,15 @@ export function def_inst(book: Book, lhs: LHS, tm: Extract<HTerm, { $: "Ref" }>,
     if (z > 64) {
       throw Err(book, ctx, "a template that stops instantiating itself (64 levels at most)", tm, tm.s, lhs.def);
     }
-    o = tm.k + "~" + String(is.size);
+    // content-keyed, not first-use order: the same ~ arguments always get
+    // the same name, so a worker (or a later run) can share the check.
+    o = tm.k + "~" + hash_key(key);
+    // collision guard: never let two different keys share one name. 64-bit
+    // makes this unreachable in practice; lengthen deterministically if hit.
+    let c = 1;
+    while (is.has(key) === false && [...is.values()].includes(o)) {
+      o = tm.k + "~" + hash_key(key) + "_" + String(c++);
+    }
     is.set(key, o);
     const inst: Def = { $: "Def", n: def.n - def.x, x: 0, T, v: xs.reduce((v, a) => term_apply(v, a), def.v as HTerm), u: def.u };
     book.tlds[o] = { ...inst, v: null };
