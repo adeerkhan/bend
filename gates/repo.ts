@@ -70,6 +70,7 @@ allow(/^demos\/[a-z0-9_]+\/web\/(index\.html|main\.js|bunfig\.toml)$/);
 allow("guide/GUIDE.md", 8000);
 allow("guide/EFFECTS.md");
 allow("guide/SHADERS.md");
+allow("guide/GPU.md");
 allow(/^paper\/(BendRT|BendTT)\.pdf$/);
 allow(/^media\/intro\.(gif|mp4)$/);
 allow("media/kind_devil_theorem.mp4");
