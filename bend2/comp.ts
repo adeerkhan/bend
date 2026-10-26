@@ -3426,6 +3426,7 @@ using namespace metal;
 #endif
 #endif
 #define FAR static __attribute__((noinline))
+// The poll's period, 4096, is WL_NSPIN's loop and err_spun's mask (#1776).
 #define WL_SPIN     for (;;) { if (err_spun(e.mem, &wpoll)) { return 0; }
 #define WL_SPUN     } break;
 #define WL_AGAIN(F) continue
@@ -3437,8 +3438,13 @@ using namespace metal;
 #define WL_OPEN    {
 #define WL_JMP(F)  { fid = (F); break; }
 #define WL_DYN     WL_JMP
+#if BEND_RTC
 #define WL_NSPIN  for (;;) { wpoll = 4096; do {
 #define WL_NSPUN  } while (--wpoll); if (wpoll) break; if (err_seen(e.mem)) return 0; }
+#else
+#define WL_NSPIN  WL_SPIN
+#define WL_NSPUN  }
+#endif
 #else
 #define DFAR       INLINE
 #define LOCK(l)    while (__atomic_exchange_n(&(l), 1, __ATOMIC_ACQUIRE)) {}
@@ -3448,8 +3454,6 @@ using namespace metal;
 #define WL_OPEN    { WL_BANK u32 rn;
 #define WL_JMP(F)  __attribute__((musttail)) return WL_##F(WL_ALL)
 #define WL_DYN(F)  __attribute__((musttail)) return wl_tab[F](WL_ALL)
-#define WL_NSPIN  WL_SPIN
-#define WL_NSPUN  }
 #endif
 
 #define LANE_STEP (DEVICE ? (long)CUBE : 1)
