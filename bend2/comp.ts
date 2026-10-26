@@ -3426,9 +3426,6 @@ using namespace metal;
 #endif
 #endif
 #define FAR static __attribute__((noinline))
-
-// The device inlines a spin once per caller, so a long one is a call there.
-// The host lets clang decide.
 #define WL_SPIN     for (;;) { if (err_spun(e.mem, &wpoll)) { return 0; }
 #define WL_SPUN     } break;
 #define WL_AGAIN(F) continue
@@ -3440,11 +3437,8 @@ using namespace metal;
 #define WL_OPEN    {
 #define WL_JMP(F)  { fid = (F); break; }
 #define WL_DYN     WL_JMP
-// A native spin polls the error word every 4096 steps, not every step: its
-// branch stops ptxas from unrolling the hot loop (#1776). The period matches
-// err_spun's.
-#define WL_NSPIN  for (;;) { for (wpoll = 4096; wpoll != 0; wpoll -= 1) {
-#define WL_NSPUN  } if (wpoll != 0) { break; } if (err_seen(e.mem)) { return 0; } }
+#define WL_NSPIN  for (;;) { wpoll = 4096; do {
+#define WL_NSPUN  } while (--wpoll); if (wpoll) break; if (err_seen(e.mem)) return 0; }
 #else
 #define DFAR       INLINE
 #define LOCK(l)    while (__atomic_exchange_n(&(l), 1, __ATOMIC_ACQUIRE)) {}
@@ -3783,7 +3777,7 @@ static void err_post(u64* H, u32 code) {
   err_fail(ERR_TEXT[code]);
 }
 
-// Flush if free, report the fault, then re-raise its signal.
+// Flush if free, report, raise.
 static void err_trap(int sig) {
   static const char line[] = ${JSON.stringify(`bend: ${ERRS[7]}\n`)};
   if (err_claim() && ftrylockfile(stdout) == 0) fflush(stdout);
@@ -5570,8 +5564,6 @@ static void io_spawn(Term m) {
   io_live += 1;
 }
 
-// io_park stays in deadline order (time 0, none, sorts last; ties keep
-// their park order).
 static void io_park_add(IoWork* w) {
   IoWork* p = io_park;
   if (p == NULL || p->time - 1 <= w->time - 1) {
