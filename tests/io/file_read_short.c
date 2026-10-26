@@ -1,5 +1,6 @@
 #include <fcntl.h>
 #include <sys/stat.h>
+#include <sys/wait.h>
 #include <unistd.h>
 
 // A File on the read end of a FIFO whose writer sends n bytes one at a
@@ -9,12 +10,20 @@ static void short_file_call(IoWork* w) {
   char path[64];
   snprintf(path, sizeof path, "/tmp/bend_read_short_%d", (int)getpid());
   unlink(path);
-  mkfifo(path, 0600);
-  int rd = open(path, O_RDONLY | O_NONBLOCK);
-  int wr = open(path, O_WRONLY | O_NONBLOCK);
+  int rd = mkfifo(path, 0600) < 0 ? -1 : open(path, O_RDONLY | O_NONBLOCK);
+  int wr = rd < 0 ? -1 : open(path, O_WRONLY | O_NONBLOCK);
   unlink(path);
+  if (wr < 0) {
+    perror("file_read_short: fifo");
+    _exit(1);
+  }
+  // The writer is a grandchild, so the child exits at once and is
+  // reaped here; no zombie stays behind the runtime.
   pid_t pid = fork();
   if (pid == 0) {
+    if (fork() != 0) {
+      _exit(0);
+    }
     close(rd);
     for (u32 i = 0; i < w->word; i += 1) {
       write(wr, "x", 1);
@@ -23,6 +32,7 @@ static void short_file_call(IoWork* w) {
     close(wr);
     _exit(0);
   }
+  waitpid(pid, NULL, 0);
   close(wr);
   int flags = fcntl(rd, F_GETFL);
   fcntl(rd, F_SETFL, flags & ~O_NONBLOCK);

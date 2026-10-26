@@ -321,6 +321,13 @@ def File.read(file: File, max: U32) ->
   import "./effs/file_read.c"
   import "./effs/file_read.js"
 
+# The next line with its "\n", up to max bytes, so a terminal or a pipe
+# answers each line as it comes; "" only at the end of the file.
+def File.read_line(file: File, max: U32) ->
+  IO(File & Result<&1, &1, U32 & String, String>):
+  import "./effs/file_read.c"
+  import "./effs/file_read.js"
+
 def File.read_bytes(file: File, max: U32) ->
   IO(File & Result<&1, &1, U32 & String, List<&2, U32>>):
   import "./effs/file_read.c"
