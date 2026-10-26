@@ -2254,6 +2254,9 @@ export function parse_term_do_stmt(p: Parse, m: Name, ts: LTerm[], col: number):
   }
   const t = parse_term(p);
   parse_skip(p);
+  if (t.$ === "Var" && !parse_at(p, ":") && !parse_at(p, "==") && parse_at(p, "=")) {
+    parse_fail(p, "a do-block let with its type (write \"" + t.k + " : T = ...\", or bind the value before the block)", beg);
+  }
   const typed = t.$ === "Var" && parse_take(p, ":");
   const step  = !typed && parse_more(p, col);
   const A     = typed ? parse_term(p, 1) : step ? parse_var(p, "Unit", t.s) : t;
