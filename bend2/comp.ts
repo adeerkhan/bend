@@ -3259,8 +3259,6 @@ function js_def(sc: Scope, k: Name, def: Bend.Def): void {
   file_push(sc, "");
 }
 
-// What crosses to or from a host: a Nat comes in as a number, which nat_in
-// checks; text gets U+FFFD for what is no Unicode scalar.
 function host(A: HTerm | null, x: string, out = 0): string {
   const k = ty_adt(A)?.k;
   return k === "Char" || k === "String" ? `str_${out ? "out" : "in"}(${x})`
@@ -3430,6 +3428,13 @@ using namespace metal;
 #define WL_SPIN     for (;;) { if (err_spun(e.mem, &wpoll)) { return 0; }
 #define WL_SPUN     } break;
 #define WL_AGAIN(F) continue
+#if BEND_RTC
+#define WL_NSPIN  for (;;) { wpoll = 4096; do {
+#define WL_NSPUN  } while (--wpoll); if (wpoll) break; if (err_seen(e.mem)) return 0; }
+#else
+#define WL_NSPIN  WL_SPIN
+#define WL_NSPUN  }
+#endif
 #if DEVICE
 #define DFAR       FAR
 #define LOCK(l)
@@ -3438,13 +3443,6 @@ using namespace metal;
 #define WL_OPEN    {
 #define WL_JMP(F)  { fid = (F); break; }
 #define WL_DYN     WL_JMP
-#if BEND_RTC
-#define WL_NSPIN  for (;;) { wpoll = 4096; do {
-#define WL_NSPUN  } while (--wpoll); if (wpoll) break; if (err_seen(e.mem)) return 0; }
-#else
-#define WL_NSPIN  WL_SPIN
-#define WL_NSPUN  }
-#endif
 #else
 #define DFAR       INLINE
 #define LOCK(l)    while (__atomic_exchange_n(&(l), 1, __ATOMIC_ACQUIRE)) {}
