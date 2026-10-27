@@ -1835,10 +1835,11 @@ function arr_op(sc: Scope, k: string, el: Lay, args: Val[]): Val {
     return val_new([a, `(1ull << (blk_cls(${a}) - ${lgs}))`],
       lay_pack([["Tuple", [BOX, W32]]]));
   }
-  const get = k === "array_get" || k === "array_get_unchecked";
-  const [l, at] = emit_hold(sc, [arr_loc(sc, a),
-    k === "array_get_unchecked" ? `((u32)${args[1].ws[0]} << ${lgs})`
-      : `blk_at(${a}, ${args[1].ws[0]}, ${lgs})`], "at");
+  const raw = k === "array_get_unchecked";
+  const get = raw || k === "array_get";
+  const [l, at] = emit_hold(sc, [arr_loc(sc, a), raw
+    ? `((u32)${args[1].ws[0]} << ${lgs})`
+    : `blk_at(${a}, ${args[1].ws[0]}, ${lgs})`], "at");
   const old = arr_cells(sc, l, at, el, get ? "blk_keep(e, $)" : "e.mem[$]");
   if (!get) {
     val_own(val_to(sc, args[2], el)).forEach((w, j) => file_push(sc,
@@ -2357,7 +2358,7 @@ function emit_intr(sc: Scope, k: Name, it: Intr, m: Spine,
   const args = emit_each(sc, m.args);
   const op = op_name(k);
   const C = it.C!;
-  if (["array_get", "array_get_unchecked", "array_new", "array_clone"].includes(op)
+  if (/^array_(get|get_unchecked|new|clone)$/.test(op)
     && lay_el(m.all[0]).ks.includes("box")
     && !(op === "array_new" && ctr_packed(m.all[2]))) {
     facts_hot(sc.def, m.all[0], true);
@@ -4247,6 +4248,8 @@ INLINE Term term_word(Env e, Term w) {
 // Blk
 // ===
 
+// A block owns one allocation in its class (an ARR 2^c Terms, a BUF 2^c
+// u32). Matching ANode is blk_half twice (the high call frees the source).
 
 #define BLK_ALLOC(n, w) \
   u64 n = heap_alloc(e, w); \
