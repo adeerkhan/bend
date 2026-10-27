@@ -3324,8 +3324,6 @@ const runtime_c = (tabs: string, spins: string, segs: string,
 // Imports
 // =======
 
-// The Objective-C headers take #include, not #import: a build
-// (-o) reads an #import as the framework of an effect.
 
 #pragma clang fp contract(off)
 
