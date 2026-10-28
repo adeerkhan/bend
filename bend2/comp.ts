@@ -216,6 +216,7 @@ const OPERATIONS: Record<string, Intr> = Object.setPrototypeOf({
   ...Object.fromEntries(Object.entries({
     new: "array_new($0, $1)", set: "($0[$1 % $0.length] = $2, $0)",
     get: "{$: \"Tuple\", fst: $0, snd: $0[$1 % $0.length]}",
+    get_unchecked: "{$: \"Tuple\", fst: $0, snd: $0[$1]}",
     swap: "array_rmw($0, $1, () => ($2))",
     size: "{$: \"Tuple\", fst: $0, snd: $0.length}",
   }).map(([k, JS]) => ["array_" + k, { C: null, JS }])),
@@ -223,7 +224,6 @@ const OPERATIONS: Record<string, Intr> = Object.setPrototypeOf({
     C:  ["$0", "blk_copy(e, $0)"],
     JS: "{$: \"Tuple\", fst: $0, snd: $0.slice()}",
   },
-  array_get_unchecked: { C: null, JS: "{$: \"Tuple\", fst: $0, snd: $0[$1]}" },
   ...Object.fromEntries(Object.entries({
     add: "(o + $2) >>> 0", min: "Math.min(o, $2)", max: "Math.max(o, $2)",
     and: "(o & $2) >>> 0", or: "(o | $2) >>> 0", xor: "(o ^ $2) >>> 0",

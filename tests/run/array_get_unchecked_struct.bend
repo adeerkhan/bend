@@ -20,6 +20,7 @@ def then(r: Array<Pt> & Pt, k: Array<Pt> -> U32 -> U32) -> U32:
     case Tuple{a, p}:
       k(a, pt(p))
 
+@unsafe
 def main() -> IO(Unit):
   IO.print(U32.show(
     then(Array.get_unchecked(Pt, mk(), 3), a => x =>

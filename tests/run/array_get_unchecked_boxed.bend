@@ -12,6 +12,7 @@ def then(r: Array<String> & String, k: Array<String> -> String -> String) -> Str
     case Tuple{a, s}:
       k(a, s)
 
+@unsafe
 def main() -> IO(Unit):
   IO.print(
     then(Array.get_unchecked(String, mk(), 3), a => w =>

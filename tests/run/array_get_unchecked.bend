@@ -7,6 +7,7 @@ def then(r: Array<F32> & F32, k: Array<F32> -> F32 -> IO(Unit)) -> IO(Unit):
     case Tuple{a, +x}:
       k(a, x)
 
+@unsafe
 def main() -> IO(Unit):
   do IO<Unit>:
     then(Array.get_unchecked(F32, [1.5 : F32*2n], 1), a => x =>
