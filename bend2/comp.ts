@@ -3515,9 +3515,9 @@ using namespace metal;
 #define WL_SPIN     for (;;) { if (err_spun(e.mem, &wpoll)) { return 0; }
 #define WL_SPUN     } break;
 #define WL_AGAIN(F) continue
-// The poll's period, 4096, is WL_NSPIN's loop and err_spun's mask (#1776).
+// The poll's period, 64, is WL_NSPIN's loop and err_spun's mask (#1776).
 #if BEND_RTC
-#define WL_NSPIN  for (;;) { wpoll = 4096; do {
+#define WL_NSPIN  for (;;) { wpoll = 64; do {
 #define WL_NSPUN  } while (--wpoll); if (wpoll) break; if (err_seen(e.mem)) return 0; }
 #else
 #define WL_NSPIN  WL_SPIN
@@ -3859,7 +3859,7 @@ static void err_trap(int sig) {
 #endif
 
 #define err_seen(H)    (DEVICE && a32_load(a32_at(H, H_ERROR_CODE)) != 0)
-#define err_spun(H, n) ((++*(n) & 4095) == 0 && err_seen(H))
+#define err_spun(H, n) ((++*(n) & 63) == 0 && err_seen(H))
 
 #if __METAL_VERSION__ >= 320
 #define err_peek(H) *(volatile DEV u32*)a32_at(H, H_ERROR_CODE)
