@@ -25,9 +25,11 @@ def duplicate(t): (z => {z : Ty(z)})(Box{consume(t), t})
 #|Error:
 #|- expected : t
 #|- observed : t (consumed more than once)
+#|Context:
+#|- t : Res
 #|Location: duplicate
 #|21 | law duplicate: Res -> Box
 #|22>| def duplicate(t): (z => {z : Ty(z)})(Box{consume(t), t})
-#|   |               ^
-#|23 |
+#|   |                                                      ^
+#|23 | 
 #|exit 1

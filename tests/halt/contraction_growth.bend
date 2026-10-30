@@ -50,9 +50,11 @@ def main(): Z{}
 #|Error:
 #|- expected : p
 #|- observed : p (consumed more than once)
+#|Context:
+#|- p : T
 #|Location: grow
-#|27 |   match t:
-#|28>|     case S{p}:
-#|   |            ^
-#|29 |       S{append(p, p)}
+#|28 |     case S{p}:
+#|29>|       S{append(p, p)}
+#|   |                   ^
+#|30 |     case t:
 #|exit 1

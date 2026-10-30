@@ -13,9 +13,11 @@ def main() -> Nat:
 #|Error:
 #|- expected : x
 #|- observed : x (consumed more than once)
+#|Context:
+#|- x : Nat
 #|Location: app~0
-#|5 |
-#|6>| def app(~f: Nat -> Nat, x: Nat) -> Nat:
-#|  |                         ^
-#|7 |   f(x)
+#|6 | def app(~f: Nat -> Nat, x: Nat) -> Nat:
+#|7>|   f(x)
+#|  |     ^
+#|8 | 
 #|exit 1

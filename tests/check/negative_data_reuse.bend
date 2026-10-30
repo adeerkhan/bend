@@ -27,9 +27,11 @@ def main(): omega(Ln{t => t})
 #|Error:
 #|- expected : f
 #|- observed : f (consumed more than once)
+#|Context:
+#|- f : @_:Tn -> Tn
 #|Location: omega
-#|15 |   match t:
-#|16>|     case Ln{f}:
-#|   |             ^
-#|17 |       f(Ln{f})
+#|16 |     case Ln{f}:
+#|17>|       f(Ln{f})
+#|   |         ^^^^^
+#|18 |     case Vn{n}:
 #|exit 1

@@ -26,9 +26,10 @@ def main(): Type
 #|- observed : f (consumed more than once)
 #|Context:
 #|- A : Type
+#|- f : @_:Dm<A> -> A
 #|Location: delta
-#|14 |   match d:
-#|15>|     case DCon{f}:
-#|   |               ^
-#|16 |       f(DCon{f})
+#|15 |     case DCon{f}:
+#|16>|       f(DCon{f})
+#|   |         ^^^^^^^
+#|17 | 
 #|exit 1

@@ -21,9 +21,12 @@ def c2():
 #|Error:
 #|- expected : f
 #|- observed : f (consumed more than once)
+#|Context:
+#|- f : Term
+#|- x : Term
 #|Location: c2
 #|17 | def c2():
 #|18>|   TLam{f => TLam{x => TApp{f, TApp{f, x}}}}
-#|   |        ^
-#|19 |
+#|   |                               ^^^^^^^^^^
+#|19 | 
 #|exit 1

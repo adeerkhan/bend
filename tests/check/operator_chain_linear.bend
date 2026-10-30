@@ -20,9 +20,11 @@ def main():
 #|Error:
 #|- expected : x
 #|- observed : x (consumed more than once)
+#|Context:
+#|- x : U32
 #|Location: f
-#| 9 | 
-#|10>| def f(x):
-#|   |       ^
-#|11 |   (x + x : U32)
+#|10 | def f(x):
+#|11>|   (x + x : U32)
+#|   |        ^
+#|12 | 
 #|exit 1

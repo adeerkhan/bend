@@ -40,9 +40,11 @@ def main():
 #|Error:
 #|- expected : a
 #|- observed : a (consumed more than once)
+#|Context:
+#|- a : A2
 #|Location: main
-#|35 | def main():
-#|36>|   a = mk()
-#|   |   ^
-#|37 |   use2(a, a)
+#|36 |   a = mk()
+#|37>|   use2(a, a)
+#|   |           ^
+#|38 | 
 #|exit 1

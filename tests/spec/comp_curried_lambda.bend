@@ -30,9 +30,11 @@ def main():
 #|Error:
 #|- expected : x
 #|- observed : x (consumed more than once)
+#|Context:
+#|- x : U32
 #|Location: helper
-#|19 |
-#|20>| def helper(x):
-#|   |            ^
-#|21 |   (x * x : U32)
+#|20 | def helper(x):
+#|21>|   (x * x : U32)
+#|   |        ^
+#|22 | 
 #|exit 1

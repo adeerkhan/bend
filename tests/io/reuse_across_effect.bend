@@ -64,10 +64,13 @@ def main():
 #|- expected : xs
 #|- observed : xs (consumed more than once)
 #|Context:
-#|- t : Tree
+#|- t  : Tree
+#|- xs : List<&2, U32>
+#|- a  : Unit
+#|- b  : Unit
 #|Location: main
-#|53 |   t = build(3n, 1)
-#|54>|   xs = {[1, 2, 3] : List<&2, U32>}
-#|   |   ^^
-#|55 |   do IO<Unit>:
+#|57 |     b : Unit <- IO.print(U32.show(tsum(t)))
+#|58>|     c : Unit <- IO.print(U32.show(lsum(xs)))
+#|   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+#|59 |     d : Unit <- IO.print(U32.show(lsum(xs)))
 #|exit 1

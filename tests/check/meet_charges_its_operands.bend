@@ -23,9 +23,11 @@ def dup(q):
 #|Error:
 #|- expected : q
 #|- observed : q (consumed more than once)
+#|Context:
+#|- q : Quant
 #|Location: dup
-#|18 | 
-#|19>| def dup(q):
-#|   |         ^
-#|20 |   P{q <&> &2, q <&> &2}
+#|19 | def dup(q):
+#|20>|   P{q <&> &2, q <&> &2}
+#|   |               ^^^^^^^^
+#|21 | 
 #|exit 1

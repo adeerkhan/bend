@@ -38,9 +38,11 @@ def main():
 #|Error:
 #|- expected : b
 #|- observed : b (consumed more than once)
+#|Context:
+#|- b : Badd
 #|Location: main
-#|33 | def main():
-#|34>|   b = mk()
-#|   |   ^
-#|35 |   U32.add(use(b), use(b))
+#|34 |   b = mk()
+#|35>|   U32.add(use(b), use(b))
+#|   |                   ^^^^^^
+#|36 | 
 #|exit 1

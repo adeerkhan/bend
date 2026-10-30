@@ -46,9 +46,11 @@ def main(): delta(MkBox6{argument => delta(MkBox6{argument})})
 #|Error:
 #|- expected : box
 #|- observed : box (consumed more than once)
+#|Context:
+#|- box : Box6
 #|Location: delta
-#|36 | 
-#|37>| def delta(box):
-#|   |           ^^^
-#|38 |   delta.go(box, box)
+#|37 | def delta(box):
+#|38>|   delta.go(box, box)
+#|   |                 ^^^
+#|39 | 
 #|exit 1

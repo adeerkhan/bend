@@ -29,9 +29,11 @@ def main(): 0
 #|Error:
 #|- expected : x
 #|- observed : x (consumed more than once)
+#|Context:
+#|- x : D3<U32>
 #|Location: use2
-#|16 |
-#|17>| def use2(x):
-#|   |          ^
-#|18 |   MkTwo{x, x}
+#|17 | def use2(x):
+#|18>|   MkTwo{x, x}
+#|   |            ^
+#|19 | 
 #|exit 1

@@ -626,7 +626,14 @@ export function uses_nil(): Uses {
   return Emp<Quant>();
 }
 
-export function uses_add(a: Uses, b: Uses): Uses {
+// a + b; at s, a Lone binder used by both a and b is consumed a second time
+export function uses_add(a: Uses, b: Uses, book?: Book, ctx?: Ctx, s?: Span, def?: Name): Uses {
+  for (const [i, q] of book && s ? pmap_to_array(b) : []) {
+    const ann = pmap_get(ctx!, i);
+    if (ann?.q.$ === "Lone" && q.$ !== "None" && (pmap_get(a, i) ?? None()).$ !== "None") {
+      throw Err(book!, ctx!, ann.k, ann.k + " (consumed more than once)", s, def);
+    }
+  }
   return pmap_union(a, b, quant_add);
 }
 
@@ -3409,7 +3416,7 @@ export function term_infer(book: Book, lhs: LHS, tm: HTerm, qt: Quant, ctx: Ctx,
     case "Min": {
       const a_chk = term_check(book, lhs, tm.a, qt, Qnt(tm.s), ctx, d);
       const b_chk = term_check(book, lhs, tm.b, qt, Qnt(tm.s), ctx, d);
-      return Infer(Min(a_chk.tm, b_chk.tm, tm.s), Qnt(tm.s), uses_add(a_chk.us, b_chk.us));
+      return Infer(Min(a_chk.tm, b_chk.tm, tm.s), Qnt(tm.s), uses_add(a_chk.us, b_chk.us, book, ctx, tm.b.s, lhs.def));
     }
     // Γ ⊢ A : Kind(q)
     // Γ , x : qA ⊢ B(x) : Type
@@ -3444,7 +3451,7 @@ export function term_infer(book: Book, lhs: LHS, tm: HTerm, qt: Quant, ctx: Ctx,
         throw Err(book, ctx, "a function type", f_inf.ty, tm.s, lhs.def);
       }
       const x_chk = term_check(book, lhs, tm.x, quant_dem(f_wnf.q, qt), f_wnf.A, ctx, d);
-      return Infer(App(f_inf.tm, x_chk.tm, tm.s), f_wnf.B(tm.x), uses_add(f_inf.us, x_chk.us));
+      return Infer(App(f_inf.tm, x_chk.tm, tm.s), f_wnf.B(tm.x), uses_add(f_inf.us, x_chk.us, book, ctx, tm.x.s, lhs.def));
     }
     // book[k].T = @q1 p1:K1 -> .. -> Kind(G)
     // Γ ⊢ xi : Ki ~ ui
@@ -3500,7 +3507,7 @@ export function tele_check(book: Book, lhs: LHS, tel: HTerm, xs: HTerm[], qt: Qu
     const t_dem = quant_dem(t_all.q, qt);
     const x_chk = term_check(book, lhs, x, t_dem, t_all.A, ctx, d);
     out.push(x_chk.tm);
-    us  = uses_add(us, x_chk.us);
+    us  = uses_add(us, x_chk.us, book, ctx, x.s, lhs.def);
     tel = t_all.B(x);
   }
   return { xs: out, us, tel };
@@ -3582,7 +3589,7 @@ export function term_check(book: Book, lhs: LHS, tm: HTerm, qt: Quant, ty: HTerm
         const v_inf = term_infer(book, lhs, tm.v[j], v_dem, ctx, d);
         term_check_kind(book, lhs, v_inf.ty, tm.q[j], tm.k[j], ctx, d, tm.s);
         vx.push(v_inf.tm);
-        us = uses_add(us, v_inf.us);
+        us = uses_add(us, v_inf.us, book, ctx, tm.v[j].s, lhs.def);
         f_ctx = ctx_bind(f_ctx, d + j, tm.q[j], tm.k[j], v_inf.ty);
       }
       const xs = tm.k.map((k, j): HTerm => Var(k, d + j, undefined, tm.v[j]));
@@ -3591,7 +3598,7 @@ export function term_check(book: Book, lhs: LHS, tm: HTerm, qt: Quant, ty: HTerm
       for (let j = 0; j < n; j++) {
         fu = uses_close(book, ctx, fu, d + j, tm.k[j], tm.q[j], tm.s, lhs.def);
       }
-      return Check(Let(tm.k, xs.map((_, j) => d + j), vx, f_chk.tm, tm.s, tm.q), ty, uses_add(us, fu));
+      return Check(Let(tm.k, xs.map((_, j) => d + j), vx, f_chk.tm, tm.s, tm.q), ty, uses_add(us, fu, book, ctx, f_chk.tm.s, lhs.def));
     }
     // T == D<p1, .., pm>
     // D.c[k] = @q1 x1:F1 -> .. -> D<p1, .., pm>
@@ -3746,7 +3753,7 @@ export function term_check(book: Book, lhs: LHS, tm: HTerm, qt: Quant, ty: HTerm
       }
       const a_gol = term_apply(term_apply(tm.p, e_wnf.a), Rfl<HBody>(tm.s));
       const f_chk = term_check(book, lhs, tm.f, qt, a_gol, ctx, d);
-      return Check(Rwt(e_inf.tm, p_chk.tm, f_chk.tm, tm.s), ty, uses_add(e_inf.us, f_chk.us));
+      return Check(Rwt(e_inf.tm, p_chk.tm, f_chk.tm, tm.s), ty, uses_add(e_inf.us, f_chk.us, book, ctx, tm.f.s, lhs.def));
     }
     // Γ ⊢ x : A ~ u    A <= T
     // ---------------------- check-any

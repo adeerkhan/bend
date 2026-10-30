@@ -21,9 +21,10 @@ def main():
 #|- observed : k (consumed more than once)
 #|Context:
 #|- k0 : @_:Unit -> @_:U32 -> U32
+#|- k  : @_:U32 -> U32
 #|Location: main
-#|14 |   k0 = {(d => x => x) : Unit -> U32 -> U32}
-#|15>|   k = k0(Unit{})
-#|   |   ^
-#|16 |   P12{k, k}
+#|15 |   k = k0(Unit{})
+#|16>|   P12{k, k}
+#|   |          ^
+#|17 | 
 #|exit 1

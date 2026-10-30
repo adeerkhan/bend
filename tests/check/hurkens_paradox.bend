@@ -115,9 +115,13 @@ def main(): Uu{}
 #|- observed : f (consumed more than once)
 #|Context:
 #|- x : Type
+#|- f : @_:(@_:(@_:x -> Type) -> Type) -> x
+#|- p : @_:x -> Type
+#|- w : Unt
+#|- y : @x:Type -> @_:(@_:(@_:(@_:x -> Type) -> Type) -> x) -> @_:(@_:x -> Type) -> Type
 #|Location: tauinner
 #|43 | 
 #|44>| def tauinner(): x => f => p => w => y => p(f(y(x)(f)))
-#|   |                      ^
-#|45 |
+#|   |                                              ^^^^^^^
+#|45 | 
 #|exit 1
